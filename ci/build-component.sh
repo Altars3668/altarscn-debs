@@ -33,12 +33,13 @@ if [[ $component == grd ]]; then
 fi
 (
   cd "$source"
+  # 先封装固定源码；dh_translations 等构建步骤会重写源树中的生成文件。
+  dpkg-buildpackage -S -d -uc -us
+  dpkg-source --before-build .
   dpkg-buildpackage -b -uc -us
   # dpkg-buildpackage 的 --after-build 会弹出 quilt 补丁；回归前恢复同一份下游代码。
   dpkg-source --before-build .
   python3 -I "$root/ci/verify-component.py" "$component" "$source" "$work/package"
-  # 二进制与源码包来自完全相同的已固定源码；-S 会清理构建产物。
-  dpkg-buildpackage -S -d -uc -us
 )
 mkdir -p "$output"
 find "$work/package" -maxdepth 1 -type f \( -name '*.deb' -o -name '*.dsc' -o -name '*.tar.xz' -o -name '*.buildinfo' -o -name '*.changes' \) -exec cp -t "$output" -- {} +
