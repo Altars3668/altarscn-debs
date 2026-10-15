@@ -1,0 +1,74 @@
+name: 构建与发布 GRD 软件栈
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**/*.md']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 即使源码未变也重新编译整栈
+        type: boolean
+        default: false
+  schedule:
+    - cron: '17 3 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: grd-release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  stack:
+    uses: ./.github/workflows/build-stack.yml
+    with:
+      force: ${{ github.event_name == 'workflow_dispatch' && inputs.force || false }}
+  publish:
+    needs: stack
+    if: >-
+      always() && github.event_name != 'pull_request' &&
+      github.repository == 'Altars3668/altarscn-debs' && github.ref == 'refs/heads/main' &&
+      needs.stack.result == 'success' &&
+      (needs.stack.outputs.changed == 'true' || needs.stack.outputs.previous_tag != '')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment:
+      name: apt-publish
+      url: https://altars3668.github.io/altarscn-debs/
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.stack.outputs.control_commit }}
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: build-plan
+          path: plan
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        if: needs.stack.outputs.changed == 'true'
+        with:
+          pattern: packages-*
+          path: artifacts
+      - name: 安装发布工具
+        run: sudo apt-get update && sudo apt-get install -y apt-utils gnupg debhelper
+      - name: 生成元包、签名源并创建 draft Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
+          # 指纹是公开数据，固定在受审核的工作流中，不占用 Secret。
+          APT_SIGNING_FINGERPRINT: 5D2AA242AE29DA7C3CD3C4347186356F0AC99497
+        run: bash ci/publish.sh plan/resolved.json
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+        with:
+          path: site
+      - name: 部署签名 APT 源
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
+      - name: 将已部署构建设为正式 Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I ci/finalize-release.py plan/resolved.json

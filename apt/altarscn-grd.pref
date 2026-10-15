@@ -1,0 +1,4 @@
+# 仅固定此远程桌面软件栈，不影响其他 Ubuntu 软件包。
+Package: grd-handover-stack gnome-remote-desktop gdm3 libgdm1 gir1.2-gdm-1.0 gnome-shell* mutter* libmutter* gir1.2-mutter-* freerdp* libfreerdp* libwinpr* winpr*
+Pin: release o=AltarsCN-GRD
+Pin-Priority: 1001

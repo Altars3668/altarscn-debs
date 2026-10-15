@@ -1,0 +1,67 @@
+{
+  "suite": "resolute",
+  "architecture": "amd64",
+  "owner": "Altars3668",
+  "components": {
+    "mutter": {
+      "repository": "Altars3668/mutter",
+      "ref": "main",
+      "version": "50.1-0ubuntu2.4+altarscn3",
+      "package": "mutter",
+      "model": "quilt",
+      "orig": {
+        "filename": "mutter_50.1.orig.tar.xz",
+        "sha256": "9344502ce473f788795f26b45f8b8ff53c0a36b867470d705a11a3ee0911021e",
+        "url": "https://github.com/Altars3668/altarscn-debs/releases/download/upstream-sources/mutter_50.1.orig.tar.xz"
+      }
+    },
+    "freerdp": {
+      "repository": "Altars3668/FreeRDP",
+      "ref": "main",
+      "version": "3.30.0+dfsg-0ubuntu0.26.04.2+altarscn15",
+      "package": "freerdp3",
+      "model": "quilt",
+      "orig": {
+        "filename": "freerdp3_3.30.0+dfsg.orig.tar.xz",
+        "sha256": "e2f8c640a31c7bda3342a691569158e4782e661c8609756a11b7676ece43a249",
+        "url": "https://github.com/Altars3668/altarscn-debs/releases/download/upstream-sources/freerdp3_3.30.0+dfsg.orig.tar.xz"
+      }
+    },
+    "gdm": {
+      "repository": "Altars3668/gdm",
+      "ref": "main",
+      "version": "50.0-0ubuntu1+altarscn1",
+      "package": "gdm3",
+      "model": "quilt",
+      "orig": {
+        "filename": "gdm3_50.0.orig.tar.xz",
+        "sha256": "646f53d68f2d2d147146ffaeb85047ded8b813dcb1c104d8f0ec36ca609eb5bf",
+        "url": "https://github.com/Altars3668/altarscn-debs/releases/download/upstream-sources/gdm3_50.0.orig.tar.xz"
+      }
+    },
+    "gnome-shell": {
+      "repository": "Altars3668/gnome-shell",
+      "ref": "main",
+      "version": "50.1-0ubuntu1.2+altarscn1",
+      "package": "gnome-shell",
+      "model": "quilt",
+      "orig": {
+        "filename": "gnome-shell_50.1.orig.tar.xz",
+        "sha256": "1b47760172c14f3f4edd1c9aff365f4de45583517bf0f80df4d3acbd4e4cb294",
+        "url": "https://github.com/Altars3668/altarscn-debs/releases/download/upstream-sources/gnome-shell_50.1.orig.tar.xz"
+      }
+    },
+    "grd": {
+      "repository": "Altars3668/gnome-remote-desktop",
+      "ref": "main",
+      "version": "50.0-0ubuntu2+altarscn5",
+      "package": "gnome-remote-desktop",
+      "model": "git-fork",
+      "orig": {
+        "filename": "gnome-remote-desktop_50.0.orig.tar.xz",
+        "sha256": "770351afd47abffe93a488d40eff6b323d9a867fde79b38a3e8b18600c74e5f4",
+        "url": "https://github.com/Altars3668/altarscn-debs/releases/download/upstream-sources/gnome-remote-desktop_50.0.orig.tar.xz"
+      }
+    }
+  }
+}

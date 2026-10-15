@@ -1,0 +1,49 @@
+name: 单组件 Debian 构建
+on:
+  workflow_call:
+    inputs:
+      component:
+        type: string
+        required: true
+      control-commit:
+        type: string
+        required: true
+      dependency:
+        type: string
+        default: ''
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    container: ubuntu:26.04
+    timeout-minutes: 120
+    steps:
+      - name: 准备干净构建容器
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl git python3 devscripts dpkg-dev debhelper quilt binutils xz-utils build-essential
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: Altars3668/altarscn-debs
+          ref: ${{ inputs.control-commit }}
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: build-plan
+          path: plan
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        if: inputs.dependency != ''
+        with:
+          name: packages-${{ inputs.dependency }}
+          path: dependencies
+      - name: 构建、成品检查与定向回归
+        env:
+          COMPONENT: ${{ inputs.component }}
+        run: bash ci/build-component.sh "$COMPONENT" plan/resolved.json output
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: packages-${{ inputs.component }}
+          path: output/
+          if-no-files-found: error
+          retention-days: 14

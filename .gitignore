@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.deb
+*.buildinfo
+*.changes
+/artifacts/
+/site/
+/release-files/
+/previous-fetch/
+/plan/
+/resolved.json
+/apt-repository.tar.xz
+/signing-key/

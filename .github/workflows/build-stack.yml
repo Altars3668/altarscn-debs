@@ -1,0 +1,81 @@
+name: 可复用只读整栈构建
+on:
+  workflow_call:
+    inputs:
+      force:
+        type: boolean
+        default: false
+      override-component:
+        type: string
+        default: ''
+      override-ref:
+        type: string
+        default: ''
+    outputs:
+      changed:
+        value: ${{ jobs.plan.outputs.changed }}
+      control_commit:
+        value: ${{ jobs.plan.outputs.control_commit }}
+      release_tag:
+        value: ${{ jobs.plan.outputs.release_tag }}
+      previous_tag:
+        value: ${{ jobs.plan.outputs.previous_tag }}
+permissions:
+  contents: read
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      changed: ${{ steps.plan.outputs.changed }}
+      control_commit: ${{ steps.plan.outputs.control_commit }}
+      release_tag: ${{ steps.plan.outputs.release_tag }}
+      previous_tag: ${{ steps.plan.outputs.previous_tag }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: Altars3668/altarscn-debs
+          ref: ${{ github.repository == 'Altars3668/altarscn-debs' && github.sha || 'main' }}
+          persist-credentials: false
+      - name: 固定整栈源码版本
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORCE: ${{ inputs.force }}
+          OVERRIDE_COMPONENT: ${{ inputs.override-component }}
+          OVERRIDE_REF: ${{ inputs.override-ref }}
+        run: |
+          args=()
+          if [[ "$FORCE" == true ]]; then args+=(--force); fi
+          python3 -I ci/resolve.py --output resolved.json --override-component "$OVERRIDE_COMPONENT" --override-ref "$OVERRIDE_REF" "${args[@]}"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: build-plan
+          path: resolved.json
+          retention-days: 14
+  foundations:
+    needs: plan
+    if: needs.plan.outputs.changed == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        component: [freerdp, mutter, gdm]
+    uses: ./.github/workflows/component.yml
+    with:
+      component: ${{ matrix.component }}
+      control-commit: ${{ needs.plan.outputs.control_commit }}
+  shell:
+    needs: [plan, foundations]
+    if: needs.plan.outputs.changed == 'true'
+    uses: ./.github/workflows/component.yml
+    with:
+      component: gnome-shell
+      control-commit: ${{ needs.plan.outputs.control_commit }}
+      dependency: mutter
+  grd:
+    needs: [plan, foundations]
+    if: needs.plan.outputs.changed == 'true'
+    uses: ./.github/workflows/component.yml
+    with:
+      component: grd
+      control-commit: ${{ needs.plan.outputs.control_commit }}
+      dependency: freerdp
