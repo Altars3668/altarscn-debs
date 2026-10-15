@@ -54,7 +54,7 @@ jobs:
           pattern: packages-*
           path: artifacts
       - name: 安装发布工具
-        run: sudo apt-get update && sudo apt-get install -y apt-utils gnupg debhelper
+        run: sudo apt-get update && sudo apt-get install -y apt-utils gnupg debhelper build-essential
       - name: 生成元包、签名源并创建 draft Release
         env:
           GH_TOKEN: ${{ github.token }}
