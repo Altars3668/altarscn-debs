@@ -63,6 +63,13 @@ sudo apt-get install grd-handover-stack
 
 GRD 包携带会话接管所需的限定 D-Bus / Polkit 规则：仅 `gnome-remote-desktop` 服务账号可管理 GDM 用户显示器。该权限用于已经通过 NLA 认证的用户建立会话，不授予普通用户。仍须按源码仓库说明配置 TLS、认证与用户会话。
 
+### 从已有定制版迁移
+
+- 先运行 `apt-mark showhold`。已有 `gnome-remote-desktop` 的 hold 会阻止元包切换整栈版本；本项目不会自动解除 hold，应保留保护直到维护窗口中明确决定迁移。
+- 手工构建的 `50.0+altarscn5` 与本源采用的发行版形式 `50.0-0ubuntu2+altarscn5+gh…` 排序不同，APT 可能将这次切换显示为降级。不要仅凭版本号外观判断；须核对来源、完整版本及模拟安装计划。
+- 当前发布不包含 `.ddeb` 调试符号包。如果本机已经安装旧版 `libfreerdp3-3-dbgsym` / `libwinpr3-3-dbgsym`，它们对旧库的精确依赖可能使 APT 要求移除这些调试符号包。先审阅计划，不要批量解除 hold、运行自动清理或直接接受卸载。
+- 可先使用 `sudo apt-get --simulate --no-remove install grd-handover-stack` 做严格检查。已有系统被 hold 或旧调试包阻挡，不等于软件源不可安装；仍应单独验证发行版基础环境的依赖关系，并保留本机的保护策略。
+
 ## 自动构建与发布
 
 1. 中央 `main` 的构建相关提交、手动运行以及每日 UTC 03:17 触发。
